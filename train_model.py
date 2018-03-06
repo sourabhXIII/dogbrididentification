@@ -11,7 +11,7 @@ from keras.layers.pooling import MaxPooling2D
 
 from keras.models import Sequential
 from keras.models import Model
-from keras.optimizers import Adam
+from keras.optimizers import Adam, RMSprop
 from keras.preprocessing.image import ImageDataGenerator
 from keras.preprocessing import image
 
@@ -75,12 +75,13 @@ def get_model():
 model = get_model()
 # define the checkpoint
 file_path = "best_model.h5"
-checkpoint = ModelCheckpoint(file_path, monitor='loss', verbose=1, save_best_only=True, mode='min')
+checkpoint = ModelCheckpoint(file_path, monitor='acc', verbose=1, save_best_only=True, mode='max')
 callbacks_list = [checkpoint]
 
 # compile the model
+opt = RMSprop(lr=0.001, rho=0.9, epsilon=None, decay=0.0)
 model.compile(loss='categorical_crossentropy',
-              optimizer='rmsprop',
+              optimizer=opt,
               metrics=['accuracy'])
 
 # serialize model to JSON
@@ -92,6 +93,6 @@ with open("model.json", "w") as json_file:
 model.fit_generator(
         train_generator,
         steps_per_epoch=n_samples // batch_size,
-        epochs=10,
+        epochs=20,
         callbacks=callbacks_list,
         verbose=2)
