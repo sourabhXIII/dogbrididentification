@@ -32,7 +32,7 @@ class DataGenerator(object):
             for i in range(imax):
                 # Find list of IDs
                 list_IDs_temp = [list_IDs[k] for k in indexes[i*self.batch_size:(i+1)*self.batch_size]]
-                #print("Producing")
+                print("Producing")
                 #print(list_IDs_temp)
                 # Generate data
                 X, y = self.__data_generation(labels, list_IDs_temp, n_classes)
