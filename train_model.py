@@ -44,7 +44,7 @@ train_generator = train_datagen.flow_from_directory(
         batch_size=batch_size,
         class_mode='categorical')
 
-filenames = test_generator.filenames
+filenames = train_generator.filenames
 nb_samples = len(filenames)
 print(nb_samples)
 
@@ -53,12 +53,28 @@ def get_model():
     base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(dim_x, dim_y, n_channels))
     x = base_model.output
     x = Flatten()(x)
+
+    x = Dense(units=256,
+              kernel_initializer=RandomNormal(mean=0.0, stddev=0.01),
+              bias_initializer='zeros',
+              kernel_regularizer=l2(0.001),
+              bias_regularizer=None)(x)
+    x = LeakyReLU(alpha=0.1)(x)
+    x = Dropout(rate=0.2)(x)
+
+    x = Dense(units=256,
+              kernel_initializer=RandomNormal(mean=0.0, stddev=0.01),
+              bias_initializer='zeros',
+              kernel_regularizer=l2(0.001),
+              bias_regularizer=None)(x)
+    x = LeakyReLU(alpha=0.1)(x)
+    x = Dropout(rate=0.3)(x)
+
     x = Dense(units=n_classes,
               kernel_initializer=RandomNormal(mean=0.0, stddev=0.01),
               bias_initializer='zeros',
               kernel_regularizer=l2(0.001),
               bias_regularizer=None)(x)
-
     predictions = Activation('softmax')(x)
 
     # create graph of new model
@@ -92,7 +108,7 @@ with open("model.json", "w") as json_file:
 
 model.fit_generator(
         train_generator,
-        steps_per_epoch=n_samples // batch_size,
+        steps_per_epoch=n_samples // batch_size + 1,
         epochs=20,
         callbacks=callbacks_list,
         verbose=2)
